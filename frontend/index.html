@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Village Connecté — Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#242736;--bg4:#2e3245;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --text:#e8eaf0;--text2:#9da3b4;--text3:#5c6278;
+  --teal:#14b8a6;--teal2:#0d9488;--blue:#3b82f6;--green:#22c55e;
+  --amber:#f59e0b;--red:#ef4444;--purple:#8b5cf6;
+  --r:10px;--rs:6px
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;font-size:14px;min-height:100vh}
+/* LOGIN */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.login-card{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:40px;width:100%;max-width:400px}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-ico{width:52px;height:52px;background:var(--teal);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:12px}
+.login-logo h1{font-size:20px;font-weight:600}
+.login-logo p{font-size:13px;color:var(--text3);margin-top:4px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500}
+.field input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rs);padding:10px 14px;color:var(--text);font-size:14px;outline:none;transition:border .15s}
+.field input:focus{border-color:var(--teal)}
+.err{color:var(--red);font-size:12px;margin-top:8px;display:none}
+.btn-login{width:100%;padding:12px;background:var(--teal);color:#fff;border:none;border-radius:var(--rs);font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;transition:background .15s}
+.btn-login:hover{background:var(--teal2)}
+/* APP */
+#app{display:none}
+.sidebar{width:230px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100}
+.sb-logo{padding:18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sb-ico{width:36px;height:36px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.sb-name{font-size:14px;font-weight:600}
+.sb-sub{font-size:11px;color:var(--teal);margin-top:1px}
+nav{flex:1;padding:10px 0;overflow-y:auto}
+.nav-sec{padding:8px 16px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;color:var(--text2);transition:all .12s;border-left:3px solid transparent;font-size:13px}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--bg3);color:var(--teal);border-left-color:var(--teal)}
+.ni{width:18px;text-align:center;font-size:15px}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:600}
+.sb-user{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sb-ava{width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
+.sb-uname{font-size:13px;font-weight:500}
+.sb-urole{font-size:11px;color:var(--text3)}
+.logout-btn{margin-left:auto;cursor:pointer;color:var(--text3);font-size:16px;transition:color .12s}
+.logout-btn:hover{color:var(--red)}
+.main{margin-left:230px;flex:1}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:16px;font-weight:600}
+.content{padding:22px 24px}
+.page{display:none}.page.active{display:block}
+/* BTNS */
+.btn{padding:7px 14px;border-radius:var(--rs);border:none;cursor:pointer;font-size:13px;font-weight:500;transition:opacity .12s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{opacity:.85}
+.btn-primary{background:var(--teal);color:#fff}
+.btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.btn-danger{background:transparent;color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.btn-sm{padding:5px 10px;font-size:12px}
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.kpi-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.kpi-val{font-size:24px;font-weight:700}
+.kpi-sub{font-size:12px;color:var(--text2);margin-top:4px}
+.up{color:var(--green)}.warn{color:var(--amber)}
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-size:14px;font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.grid32{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
+/* TABLES */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;padding:9px 10px;text-align:left;border-bottom:1px solid var(--border2);white-space:nowrap}
+td{padding:10px 10px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+/* BADGES */
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500}
+.b-green{background:rgba(34,197,94,.15);color:var(--green)}
+.b-amber{background:rgba(245,158,11,.15);color:var(--amber)}
+.b-red{background:rgba(239,68,68,.15);color:var(--red)}
+.b-blue{background:rgba(59,130,246,.15);color:var(--blue)}
+.b-purple{background:rgba(139,92,246,.15);color:var(--purple)}
+.b-gray{background:rgba(255,255,255,.08);color:var(--text2)}
+/* PROGRESS */
+.prog{background:var(--bg3);border-radius:4px;height:5px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px}
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{font-size:15px;font-weight:600}
+.modal-x{cursor:pointer;color:var(--text3);font-size:20px;line-height:1}
+.modal-x:hover{color:var(--text)}
+.modal-body{padding:22px}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ff{margin-bottom:13px}
+.ff label{display:block;font-size:12px;color:var(--text2);font-weight:500;margin-bottom:5px}
+.ff input,.ff select,.ff textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rs);padding:8px 11px;color:var(--text);font-size:13px;outline:none;transition:border .12s;font-family:inherit}
+.ff input:focus,.ff select:focus{border-color:var(--teal)}
+.ff select option{background:var(--bg3)}
+/* MAP */
+.map-box{background:#111827;border-radius:8px;height:220px;position:relative;overflow:hidden}
+.mdot{position:absolute;width:11px;height:11px;border-radius:50%;border:2px solid #fff;transform:translate(-50%,-50%);cursor:pointer;transition:transform .15s;z-index:5}
+.mdot:hover{transform:translate(-50%,-50%) scale(1.7)}
+.mlbl{position:absolute;font-size:9px;color:#fff;opacity:.7;pointer-events:none}
+.mline{position:absolute;background:rgba(20,184,166,.35);height:1px;transform-origin:left center;pointer-events:none}
+/* VOUCHER */
+.voucher-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.vcard{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:14px;text-align:center}
+.vcode{font-family:monospace;font-size:17px;font-weight:700;letter-spacing:2px;color:var(--teal);margin:6px 0}
+.vinfo{font-size:11px;color:var(--text3)}
+/* BARS */
+.bars{display:flex;align-items:flex-end;gap:5px;height:80px}
+.bcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bar{width:100%;border-radius:3px 3px 0 0;background:var(--teal);min-height:4px}
+.blbl{font-size:10px;color:var(--text3)}
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:12px 0}
+/* SEARCH */
+.srch{position:relative;max-width:260px}
+.srch input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:7px 11px 7px 30px;color:var(--text);font-size:13px;outline:none}
+.srch::before{content:'🔍';position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none}
+/* TOASTS */
+#toast{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:11px 15px;font-size:13px;display:flex;align-items:center;gap:9px;min-width:210px}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--red)}
+.toast.info{border-left:3px solid var(--blue)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.toast{animation:fadeUp .18s ease}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-ico">📡</div>
+      <h1>Village Connecté</h1>
+      <p>Espace Administrateur · Dioradougou</p>
+    </div>
+    <div class="field">
+      <label>Adresse e-mail</label>
+      <input type="email" id="l-email" value="admin@villageconnecte.ci">
+    </div>
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" id="l-pass" value="Admin@2025">
+    </div>
+    <div class="err" id="l-err">Email ou mot de passe incorrect.</div>
+    <button class="btn-login" id="btn-login">Se connecter</button>
+    <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:14px">Démo : admin@villageconnecte.ci / Admin@2025</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div style="display:flex">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sb-logo">
+        <div class="sb-ico">📡</div>
+        <div><div class="sb-name">Village Connecté</div><div class="sb-sub">● Dioradougou</div></div>
+      </div>
+      <nav>
+        <div class="nav-sec">Principal</div>
+        <div class="nav-item active" data-page="dashboard"><span class="ni">📊</span>Tableau de bord</div>
+        <div class="nav-item" data-page="bornes"><span class="ni">📡</span>Bornes & accès</div>
+        <div class="nav-sec">Gestion</div>
+        <div class="nav-item" data-page="agents"><span class="ni">👥</span>Agents locaux</div>
+        <div class="nav-item" data-page="utilisateurs"><span class="ni">🧑‍🤝‍🧑</span>Utilisateurs</div>
+        <div class="nav-item" data-page="vouchers"><span class="ni">🎟️</span>Vouchers Wi-Fi</div>
+        <div class="nav-sec">Suivi</div>
+        <div class="nav-item" data-page="revenus"><span class="ni">💰</span>Revenus</div>
+        <div class="nav-item" data-page="alertes"><span class="ni">🔔</span>Alertes<span class="nav-badge" id="nb-alertes">2</span></div>
+      </nav>
+      <div class="sb-user">
+        <div class="sb-ava" id="sb-ava">A</div>
+        <div><div class="sb-uname" id="sb-uname">Admin</div><div class="sb-urole">Super Admin</div></div>
+        <span class="logout-btn" id="btn-logout" title="Déconnexion">⏏</span>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-title" id="tb-title">Tableau de bord</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;color:var(--text3)" id="live-t"></span>
+          <button class="btn btn-outline btn-sm" id="btn-refresh">↻</button>
+        </div>
+      </div>
+      <div class="content">
+
+        <!-- DASHBOARD -->
+        <div class="page active" id="page-dashboard">
+          <div class="kpi-grid">
+            <div class="kpi"><div class="kpi-lbl">Bornes actives</div><div class="kpi-val" style="color:var(--green)" id="kpi-bornes">0 / 0</div><div class="kpi-sub warn" id="kpi-bornes-sub">⚠ 0 en panne</div></div>
+            <div class="kpi"><div class="kpi-lbl">Utilisateurs actifs</div><div class="kpi-val" style="color:var(--blue)" id="kpi-users">0</div><div class="kpi-sub" id="kpi-users-sub" style="color:var(--text3)">connectés actuellement</div></div>
+            <div class="kpi"><div class="kpi-lbl">Revenus (FCFA)</div><div class="kpi-val" style="color:var(--teal)" id="kpi-revenus-mois">0</div><div class="kpi-sub" id="kpi-revenus-sub" style="color:var(--text3)">ce mois</div></div>
+            <div class="kpi"><div class="kpi-lbl">Vouchers vendus</div><div class="kpi-val" style="color:var(--purple)" id="kpi-vouchers">0</div><div class="kpi-sub" style="color:var(--text3)">ce mois</div></div>
+          </div>
+          <div class="grid32">
+            <div class="card">
+              <div class="card-head"><div class="card-title">Réseau Dioradougou — <span id="network-count">0</span> bornes</div><span style="font-size:11px;color:var(--text3)">GPS terrain</span></div>
+              <div class="map-box" id="map-dash"></div>
+              <div style="display:flex;gap:14px;margin-top:10px;font-size:12px">
+                <span style="color:var(--green)" id="legend-actif">● Actif (0)</span><span style="color:var(--red)" id="legend-panne">● Panne (0)</span><span style="color:var(--amber)" id="legend-maint">● Maintenance (0)</span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head"><div class="card-title">Alertes actives</div><span class="badge b-red" id="badge-alertes-card">0</span></div>
+              <div id="aw"></div>
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="card"><div class="card-head"><div class="card-title">Ventes — 7 derniers jours</div></div><div class="bars" id="main-bars"></div></div>
+            <div class="card">
+              <div class="card-head"><div class="card-title">Répartition formules</div></div>
+              <div style="display:flex;flex-direction:column;gap:11px;margin-top:4px" id="formula-dist"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BORNES -->
+        <div class="page" id="page-bornes">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Bornes & points d'accès (<span id="cnt-bornes">13</span>)</div>
+              <button class="btn btn-primary" id="btn-open-borne">+ Ajouter une borne</button>
+            </div>
+            <div class="tbl-wrap"><table><thead><tr><th>N°</th><th>Nom</th><th>Zone</th><th>GPS</th><th>Batterie</th><th>Connectés</th><th>Type</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="bornes-tb"></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- AGENTS -->
+        <div class="page" id="page-agents">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Agents locaux (<span id="cnt-agents">0</span>)</div>
+              <button class="btn btn-primary" id="btn-open-agent">+ Créer un agent</button>
+            </div>
+            <div class="tbl-wrap"><table><thead><tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Zone</th><th>Codes vendus</th><th>Revenus</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="agents-tb"></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- UTILISATEURS -->
+        <div class="page" id="page-utilisateurs">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Utilisateurs finaux (<span id="cnt-users">0</span>)</div>
+              <div class="srch"><input type="text" id="user-search" placeholder="Rechercher nom / tel…"></div>
+            </div>
+            <div class="tbl-wrap"><table><thead><tr><th>Nom</th><th>Téléphone</th><th>Dernière connexion</th><th>Borne</th><th>Formule active</th><th>Statut</th><th></th></tr></thead><tbody id="users-tb"></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- VOUCHERS -->
+        <div class="page" id="page-vouchers">
+          <div class="grid2">
+            <div class="card">
+              <div class="card-head"><div class="card-title">Générer des vouchers</div></div>
+              <div class="ff"><label>Formule</label>
+                <select id="v-f"><option value="journalier">Journalier — 200 FCFA (24h)</option><option value="hebdomadaire">Hebdomadaire — 1 000 FCFA (7j)</option><option value="mensuel">Mensuel — 3 000 FCFA (30j)</option></select></div>
+              <div class="ff"><label>Quantité (max 50)</label><input type="number" id="v-q" value="10" min="1" max="50"></div>
+              <div class="ff"><label>Assigner à un agent (optionnel)</label>
+                <select id="v-a"><option value="">— Aucun —</option></select></div>
+              <button class="btn btn-primary" style="width:100%" id="btn-gen-vouchers">⚡ Générer les vouchers</button>
+            </div>
+            <div class="card">
+              <div class="card-head"><div class="card-title">Statistiques</div></div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Total générés</span><strong id="v-total">0</strong></div>
+                <div class="divider"></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Utilisés</span><strong style="color:var(--green)" id="v-used">0</strong></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Disponibles</span><strong style="color:var(--amber)" id="v-available">0</strong></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Expirés</span><strong style="color:var(--red)" id="v-expired">0</strong></div>
+                <div class="divider"></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Revenus totaux</span><strong style="color:var(--teal)" id="v-revenus-total">0 FCFA</strong></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Vouchers générés dans cette session</div>
+              <button class="btn btn-outline btn-sm" id="btn-export-csv">⬇ Exporter CSV</button>
+            </div>
+            <div class="voucher-grid" id="vg"><div style="color:var(--text3);font-size:13px;grid-column:1/-1;padding:18px 0;text-align:center">Aucun voucher généré. Utilisez le formulaire ci-dessus.</div></div>
+          </div>
+        </div>
+
+        <!-- REVENUS -->
+        <div class="page" id="page-revenus">
+          <div class="kpi-grid">
+            <div class="kpi"><div class="kpi-lbl">Ce mois</div><div class="kpi-val" style="color:var(--teal)" id="rev-mois">0</div><div class="kpi-sub" style="color:var(--text3)">FCFA</div></div>
+            <div class="kpi"><div class="kpi-lbl">Ce trimestre</div><div class="kpi-val" style="color:var(--blue)" id="rev-trimestre">0</div><div class="kpi-sub" style="color:var(--text3)">FCFA</div></div>
+            <div class="kpi"><div class="kpi-lbl">Total projet</div><div class="kpi-val" style="color:var(--purple)" id="rev-total">0</div><div class="kpi-sub" style="color:var(--text3)">FCFA</div></div>
+            <div class="kpi"><div class="kpi-lbl">Objectif mensuel</div><div class="kpi-val" style="color:var(--green)" id="rev-objective">0%</div><div class="kpi-sub" id="rev-objective-sub" style="color:var(--text3)">0 / 0 FCFA</div></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Historique transactions</div><button class="btn btn-outline btn-sm">⬇ CSV</button></div>
+            <div class="tbl-wrap"><table><thead><tr><th>Date / Heure</th><th>Agent</th><th>Formule</th><th>Code</th><th>Montant</th></tr></thead><tbody id="ventes-tb"></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- ALERTES -->
+        <div class="page" id="page-alertes">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Alertes système</div><button class="btn btn-outline btn-sm" id="btn-mark-read">Tout marquer lu</button></div>
+            <div class="tbl-wrap"><table><thead><tr><th>Heure</th><th>Borne</th><th>Type</th><th>Message</th><th>Statut</th></tr></thead><tbody id="alertes-tb"></tbody></table></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BORNE -->
+<div class="modal-bg" id="m-borne">
+  <div class="modal">
+    <div class="modal-head"><h3>📡 Ajouter une borne</h3><span class="modal-x" data-close-modal="m-borne">×</span></div>
+    <div class="modal-body">
+      <div class="frow"><div class="ff"><label>Numéro</label><input type="number" id="b-num" placeholder="14"></div><div class="ff"><label>Nom</label><input id="b-nom" placeholder="Borne-14 Quartier"></div></div>
+      <div class="ff"><label>Zone / Quartier</label><input id="b-zone" placeholder="ex. Nord-Est"></div>
+      <div class="frow"><div class="ff"><label>Latitude GPS</label><input type="number" step="0.0000001" id="b-lat" placeholder="7.7842113"></div><div class="ff"><label>Longitude GPS</label><input type="number" step="0.0000001" id="b-lon" placeholder="-7.8816685"></div></div>
+      <div class="frow">
+        <div class="ff"><label>Panneau solaire</label><select id="b-w"><option>20W</option><option>30W</option><option>50W</option></select></div>
+        <div class="ff"><label>Hauteur mât</label><select id="b-h"><option>4m</option><option>6m</option><option>8m</option></select></div>
+      </div>
+      <div class="ff"><label>Type de nœud</label><select id="b-t"><option>Répéteur</option><option>Nœud central</option><option>HUB principal</option><option>Borne principale</option></select></div>
+      <div class="ff"><label>IP locale (optionnel)</label><input id="b-ip" placeholder="192.168.1.14"></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-outline" data-close-modal="m-borne">Annuler</button><button class="btn btn-primary" id="btn-save-borne">✓ Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- MODAL AGENT -->
+<div class="modal-bg" id="m-agent">
+  <div class="modal">
+    <div class="modal-head"><h3>👤 Créer un agent local</h3><span class="modal-x" data-close-modal="m-agent">×</span></div>
+    <div class="modal-body">
+      <div class="frow"><div class="ff"><label>Prénom & Nom</label><input id="a-nom" placeholder="Kouamé Brou"></div><div class="ff"><label>Téléphone</label><input id="a-tel" placeholder="+225 07 00 00 00"></div></div>
+      <div class="ff"><label>Email</label><input type="email" id="a-email" placeholder="agent@villageconnecte.ci"></div>
+      <div class="frow">
+        <div class="ff"><label>Zone assignée</label><select id="a-zone"><option>Centre</option><option>Nord</option><option>Sud</option><option>Est</option><option>Ouest</option><option>Nord-Est</option><option>Sud-Ouest</option><option>Toutes zones</option></select></div>
+        <div class="ff"><label>Mot de passe initial</label><input type="password" id="a-pass" placeholder="Min. 8 caractères"></div>
+      </div>
+      <div class="ff"><label>Bornes assignées <span style="color:var(--text3)">(Ctrl+clic = multi)</span></label>
+        <select id="a-bornes" multiple style="height:75px"></select>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-outline" data-close-modal="m-agent">Annuler</button><button class="btn btn-primary" id="btn-save-agent">✓ Créer l'agent</button></div>
+  </div>
+</div>
+
+<!-- MODAL DETAIL BORNE -->
+<div class="modal-bg" id="m-detail">
+  <div class="modal">
+    <div class="modal-head"><h3 id="det-title">Détail borne</h3><span class="modal-x" data-close-modal="m-detail">×</span></div>
+    <div class="modal-body" id="det-body"></div>
+    <div class="modal-foot"><button class="btn btn-danger btn-sm" id="btn-detail-report">Signaler panne</button><button class="btn btn-outline" data-close-modal="m-detail">Fermer</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="/app.js" defer></script>
+</body>
+</html>
