@@ -9,11 +9,11 @@ services:
       MYSQL_DATABASE: village_connecte
       MYSQL_USER: village_user
       MYSQL_PASSWORD: village_pass
-    ports:
-      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./database_complete.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - village-internal
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
       interval: 10s
@@ -34,7 +34,9 @@ services:
       PMA_PASSWORD: root
       MYSQL_ROOT_PASSWORD: root
     ports:
-      - "8080:80"
+      - "127.0.0.1:8080:80"
+    networks:
+      - village-internal
 
   backend:
     build:
@@ -54,12 +56,29 @@ services:
       DB_PASS: root
       DB_NAME: village_connecte
       FRONTEND_PATH: /frontend
-    ports:
-      - "3000:3000"
     volumes:
       - ./backend:/app
       - ./frontend:/frontend:ro
       - /app/node_modules
+    networks:
+      - village-internal
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.village-connect.rule=Host(`village.voisilab.online`)"
+      - "traefik.http.routers.village-connect.entrypoints=websecure"
+      - "traefik.http.routers.village-connect.tls.certresolver=letsencrypt"
+      - "traefik.http.services.village-connect.loadbalancer.server.port=3000"
+      - "traefik.http.routers.village-connect.middlewares=village-connect-headers"
+      - "traefik.http.middlewares.village-connect-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.village-connect-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.village-connect-headers.headers.forceSTSHeader=true"
 
 volumes:
   mysql_data:
+
+networks:
+  village-internal:
+    driver: bridge
+  traefik-network:
+    external: true
